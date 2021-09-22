@@ -8,3 +8,22 @@ export const findCandidatoByNome = async (nome) => {
       })
     }) 
 };
+
+
+export const findReceitasByCandidatoAndAnoGroupByCategoria = async (candidatoId, ano) => {  
+  return new Promise((resolve, reject) => {
+    api.get(`/receitas/por-categoria?candidatoId=${candidatoId}&ano=${ano}`)
+    .then(response => {
+      resolve(response.status === 200 && response.data);
+    })
+  }) 
+};
+
+export const findDespesasByCandidatoAndAnoGroupByCategoria = async (candidatoId, ano) => {  
+  return new Promise((resolve, reject) => {
+    api.get(`/despesas/por-categoria?candidatoId=${candidatoId}&ano=${ano}`)
+    .then(response => {
+      resolve(response.status === 200 && response.data);
+    })
+  }) 
+};

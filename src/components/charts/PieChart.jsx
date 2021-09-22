@@ -36,8 +36,8 @@ export default class CustomPieChart extends PureComponent {
                         fill="#8884d8"
                         dataKey="value"
                     >
-                        {this.props.data.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={this.props.headers[index].color} />
+                        {this.props.colors.map((color, index) => (
+                        <Cell key={`cell-${index}`} fill={color} />
                         ))}
                     </Pie>
                     <Tooltip/>

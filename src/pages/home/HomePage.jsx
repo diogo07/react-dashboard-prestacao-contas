@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { fetchLoading } from '../../actions/general/actions';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { findCandidatoByNome } from '../../actions/candidato/actions';
+import { findCandidatoByNome, findReceitasByCandidatoAndAnoGroupByCategoria, findDespesasByCandidatoAndAnoGroupByCategoria } from '../../actions/candidato/actions';
 import TextFieldAutocomplete from '../../components/autocomplete';
 import { moneyWithMask } from '../../helpers';
 import InfoIcon from '@material-ui/icons/Info';
@@ -15,13 +15,17 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import CustomPieChart from '../../components/charts/PieChart';
 
 const INITIAL_STATE = {
   candidato: null,
   receitasTotais: [],
+  receitasPorCategoria: [],
+  despesasPorCategoria: [],
   option: 0
 }
 
+const colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 class HomePage extends Component {
 
@@ -36,8 +40,26 @@ class HomePage extends Component {
 
   changeCandidato = async (candidato) => {
     this.props.fetchLoading(true);
-    this.setState({ candidato: candidato });
+    this.setState({ candidato: candidato, option: 0 });
     this.props.fetchLoading(false);
+  }
+
+  renderPieChartReceitas = (candidatoId, ano) => {
+    this.props.fetchLoading(true);
+    findReceitasByCandidatoAndAnoGroupByCategoria(candidatoId, ano).then(response => {
+      this.setState({receitasPorCategoria: response.map(row => { return {name: row.categoria, value: row.total }})});
+      this.props.fetchLoading(false);
+    });
+    return this.state.receitasPorCategoria && <CustomPieChart data={this.state.receitasPorCategoria} colors={colors}/>
+  }
+
+  renderPieChartDespesas = (candidatoId, ano) => {
+    this.props.fetchLoading(true);
+    findDespesasByCandidatoAndAnoGroupByCategoria(candidatoId, ano).then(response => {
+      this.setState({despesasPorCategoria: response.map(row => { return {name: row.categoria, value: parseFloat(row.total) }})});
+      this.props.fetchLoading(false);
+    });
+    return this.state.despesasPorCategoria.length && <CustomPieChart data={this.state.despesasPorCategoria} colors={colors}/>
   }
 
   renderMenuOptions = (candidatura) => {
@@ -85,6 +107,12 @@ class HomePage extends Component {
             </Typography>
             </Grid>
           </Grid>
+          
+          <Grid item={true} xs={12} md={12}>
+            { this.renderPieChartReceitas(this.state.candidato.id, candidatura.ano)}
+          </Grid>
+
+
           <Grid item={true} xs={12} md={12}>
             <List>
               {candidatura.receitas.map((receita) => {
@@ -123,6 +151,11 @@ class HomePage extends Component {
             </Typography>
             </Grid>
           </Grid>
+
+          <Grid item={true} xs={12} md={12}>
+            { this.renderPieChartDespesas(this.state.candidato.id, candidatura.ano)}
+          </Grid>
+
           <Grid item={true} xs={12} md={12}>
             <List>
               {candidatura.despesas.map((despesa) => {
